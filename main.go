@@ -16,6 +16,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/google/uuid"
 	"github.com/pion/interceptor"
 	"github.com/pion/interceptor/pkg/intervalpli"
 	"github.com/pion/webrtc/v3"
@@ -24,6 +25,7 @@ import (
 	"github.com/pion/webrtc/v3/pkg/media/ivfwriter"
 	"github.com/pion/webrtc/v3/pkg/media/oggreader"
 	"github.com/pion/webrtc/v3/pkg/media/oggwriter"
+	"github.com/spf13/afero"
 )
 
 const (
@@ -412,27 +414,27 @@ func main() {
 		} else if _, err = peerConnection.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo); err != nil {
 			panic(err)
 		}
-		// id := uuid.New()
-		// oggfs := afero.NewOsFs()
+		id := uuid.New()
+		oggfs := afero.NewOsFs()
+
+		destPathIvf := "files/" + id.String() + "/output.ivf"
+		destpathOgg := "files/" + id.String() + "/output.opus"
+
+		// Move the file
+		errogg := oggfs.Mkdir("files/"+id.String(), 48000)
+		if errogg != nil {
+			fmt.Println("Error creating directory:", errogg)
+		} else {
+			fmt.Println("Directory created successfully!")
+		}
 
 		// destPathIvf := "files/" + id.String() + "/output.ivf"
-		// destpathOgg := "files/" + id.String() + "/output.opus"
 
-		// // Move the file
-		// errogg := oggfs.Mkdir("files/"+id.String(), 48000)
-		// if errogg != nil {
-		// 	fmt.Println("Error creating directory:", errogg)
-		// } else {
-		// 	fmt.Println("Directory created successfully!")
-		// }
-
-		// destPathIvf := "files/" + id.String() + "/output.ivf"
-
-		oggFile, err := oggwriter.New("output.opus", 48000, 2)
+		oggFile, err := oggwriter.New(destpathOgg, 48000, 2)
 		if err != nil {
 			panic(err)
 		}
-		ivfFile, err := ivfwriter.New("output.ivf")
+		ivfFile, err := ivfwriter.New(destPathIvf)
 		if err != nil {
 			panic(err)
 		}
